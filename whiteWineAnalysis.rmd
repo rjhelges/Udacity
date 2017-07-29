@@ -1,0 +1,368 @@
+White Wine Analysis by Ryan Helgeson
+========================================================
+
+> **Tip**: You will see quoted sections like this throughout the template to
+help you construct your report. Make sure that you remove these notes before
+you finish and submit your project!
+
+> **Tip**: One of the requirements of this project is that your code follows
+good formatting techniques, including limiting your lines to 80 characters or
+less. If you're using RStudio, go into Preferences \> Code \> Display to set up
+a margin line to help you keep track of this guideline!
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using in your analysis in this code
+# chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk. This
+# prevents the code from displaying in the knitted HTML output. You should set
+# echo=FALSE for all code chunks in your file, unless it makes sense for your
+# report to show the code that generated a particular plot.
+
+# The other parameters for "message" and "warning" should also be set to FALSE
+# for other code chunks once you have verified that each plot comes out as you
+# want it to. This will clean up the flow of your report.
+
+library(ggplot2)
+library(GGally)
+library(RColorBrewer)
+library(scales)
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+wwq <- read.csv('wineQualityWhites.csv', sep = ',', colClasses = c("NULL", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA))
+```
+
+> This report explores the dataset of white wine quality and its attributes for approximately 5,000 white wines
+
+# Univariate Plots Section
+
+> **Tip**: In this section, you should perform some preliminary exploration of
+your dataset. Run some summaries of the data and create univariate plots to
+understand the structure of the individual variables in your dataset. Don't
+forget to add a comment after each plot or closely-related group of plots!
+There should be multiple code chunks and text sections; the first one below is
+just to help you get started.
+
+```{r echo=FALSE, Row_Column_Count}
+nrow(wwq)
+ncol(wwq)
+```
+
+```{r echo=FALSE, Summary}
+summary(wwq)
+```
+
+> This dataset contains 12 variables of nearly 5,000 observations
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Quality_Summary}
+wwq$quality <- factor(wwq$quality, levels = c(1,2,3,4,5,6,7,8,9,10))
+summary(wwq$quality)
+```
+
+> The quality variable rates the quality of wines on a scale of 1 to 10. I changed the quality variable into an ordered factored variable because there are only 10 possible values for quality. In the summary it shows that there are only wines with the quality in the range of 3 to 9 with 6 having the most.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Alcohol_Distribution}
+ggplot(aes(alcohol), data = wwq) + geom_histogram(binwidth = .1)
+```
+
+> Alcohol appears to be skewed right with most of the observations around 9.5.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Sulfates_Distribution}
+ggplot(aes(sulphates), data = wwq) + geom_histogram(binwidth = .01)
+```
+
+> Sulphates distribution is skewed right with most of the observations around .5.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, pH_Distribution}
+ggplot(aes(pH), data = wwq) + geom_histogram(binwidth = .01)
+```
+
+> pH has a normal distribution with the middle of the distribution around 3.15.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Distribution}
+ggplot(aes(density), data = wwq) + geom_histogram(binwidth = 0.0005)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Distribution_2}
+ggplot(aes(density), data = subset(wwq, density < 1.01)) + geom_histogram(binwidth = 0.0001) +
+  scale_x_continuous(limits = c(0.985, 1.005))
+```
+
+> Density looks to have a normal distribution but seems to have a couple outliers greater than 1 throwing the plot off. Take out the outliers and zoom in and you can see a fairly normal distribution.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Free_Sulfur_Dioxide_Distribution}
+ggplot(aes(free.sulfur.dioxide), data = wwq) + geom_histogram(binwidth = 1) +
+  scale_x_continuous(limits = (c(0,100)))
+```
+
+> Free Sulfur Dioxide distribution has a normal distribution with a little bit longer tail towards the right. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Total_Sulfur_Dioxide_Distribution}
+ggplot(aes(total.sulfur.dioxide), data = wwq) + geom_histogram(binwidth = 2) +
+  scale_x_continuous(limits = c(0,250))
+```
+
+> Total Sulfur Dioxide is normally distributed with a steep curve on the left and a gradual downhill curve on the right.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Chlorides_Distribution}
+ggplot(aes(chlorides), data = wwq) + geom_histogram(binwidth = 0.001) +
+  scale_x_continuous(limits = c(0.0,0.1))
+```
+
+> Chlorides also show a normal distribution with most of the observations around .040.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Residual_Sugar_Distribution}
+ggplot(aes(residual.sugar), data = wwq) + geom_histogram(binwidth = .25) +
+  scale_x_continuous(limits = c(0,20))
+```
+
+> Residual sugar is skewed right with the majority of observations in the 1-2 area.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Citric_Acid_Distribution}
+ggplot(aes(citric.acid), data = wwq) + geom_histogram(binwidth = .01) +
+  scale_x_continuous(limits = c(0,1))
+```
+
+> Citric Acid is normally distributed with most observations around 0.3. There is a spike just short of 0.5 which has me intrigued as to why it is there. Another smaller peak just before 0.75.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Volatile_Acidity_Distribution}
+ggplot(aes(volatile.acidity), data = wwq) + geom_histogram(binwidth = .01) +
+  scale_x_continuous(limits = c(0,.9))
+```
+
+> Volatile Acidity is skewed right with the peak around 0.25.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Fixed_Acidity_Distribution}
+ggplot(aes(fixed.acidity), data = wwq) + geom_histogram(binwidth = .1) +
+  scale_x_continuous(limits = c(3,11))
+```
+
+> Fixed Acidity has a normal distribution.
+
+# Univariate Analysis
+
+> **Tip**: Now that you've completed your univariate explorations, it's time to
+reflect on and summarize what you've found. Use the questions below to help you
+gather your observations and add your own if you have other thoughts!
+
+### What is the structure of your dataset?
+
+> The dataset has 4,898 observations of 12 different variables. Quality is a order factored variable from 1-10 with 1 being of least quality and 10 being of highest quality. Most variables are normally distributed with alcohol, residual.sugar, and volatile.acidity skewed right.
+     
+### What is/are the main feature(s) of interest in your dataset?
+
+> Main interest is how quality is effected by the other variables in the dataset. Do any of them have a strong correlation? Is there a way to predict the quality of a white wine based off of the chemical makeup? Is it possible to use that algorithm to make a white wine that would score a 10 in quality?
+
+### What other features in the dataset do you think will help support your \
+investigation into your feature(s) of interest?
+
+> I think all of the 11 other variable have a chance to impact quality. My guess would be that residual sugar and citric acid might be 2 of the stronger variables when it comes to predicting quality.
+
+### Of the features you investigated, were there any unusual distributions? \
+Did you perform any operations on the data to tidy, adjust, or change the form \
+of the data? If so, why did you do this?
+
+> There were a couple variables with outliers that disrupted the distribution, density as one example. To get a better look at the distribution I took out the outliers to help zoom in on where the majority of the data was. This helped to better understand just what kind of data I was looking at.
+
+> I also changed the quality variable from a continuous variable to a categorical variable so future statisically modeling with treat this variable correctly
+
+# Bivariate Plots Section
+
+> **Tip**: Based on what you saw in the univariate plots, what relationships
+between variables might be interesting to look at in this section? Don't limit
+yourself to relationships between a main output feature and one of the
+supporting variables. Try to look at relationships between supporting variables
+as well.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Correlation_Matrix}
+ww <- wwq[-12]
+cor(ww, method = 'pearson' )
+```
+
+> The highest correlation between 2 variables is 0.839 between density and residual.sugar. Let's look more into this relationship.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Sugar_Density}
+ggplot(aes(residual.sugar, density), data = subset(wwq, density <= 1)) + geom_point(alpha = .5, position = 'jitter')
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Sugar_Density_2}
+ggplot(aes(residual.sugar, density), data = subset(wwq, density <= 1 & residual.sugar >= 3)) + 
+  geom_point(alpha = .5, position = 'jitter')
+```
+
+> You can see a positive relationship between density and residual.sugar. There also appears to be a line of points around 2.5 for residual.sugar. Creating a subset where residual.sugar >= 3 takes those points out and makes the relationship more clear.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Alcohol}
+ggplot(aes(density, alcohol), data = subset(wwq, density <= 1)) + geom_point()
+```
+
+> You can see a negative relationship between alcohol and density. Wonder what the plot between alcohol and residual.sugar looks like?
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Sugar_alcohol}
+ggplot(aes(residual.sugar, alcohol), data = subset(wwq, residual.sugar < 25)) + geom_point(alpha = .5)
+```
+
+> Maybe a slight negative relationship here, and you can still see a clump of points around where residual.sugar is around 2.5.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Density_Sulfur}
+ggplot(aes(density, total.sulfur.dioxide), data = subset(wwq, density <= 1 & total.sulfur.dioxide < 350)) + geom_point(alpha = .5)
+```
+
+> Also see a positive correlation between denstiy and total.sulfur.dioxide.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Quality_Alcohol}
+ggplot(aes(quality, alcohol), data = wwq) + geom_boxplot()
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Quality_Sugar}
+ggplot(aes(quality, residual.sugar), data = subset(wwq, residual.sugar < 25)) + geom_boxplot()
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Quality_Density}
+ggplot(aes(quality, density), data = subset(wwq, density <= 1)) + geom_boxplot()
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Quality_Sulfur}
+ggplot(aes(quality, total.sulfur.dioxide), data = wwq) + geom_boxplot()
+```
+
+> In regards to a relationship with quality, nothing is real strong. You see it a little bit with alcohol as the mean alcohol is greater as the quality increase. And with density you see the mean density decrease as quality increases. Nothing much can be gathered from the relationship of residual.sugar and total.sulfur.dioxide with quality.
+
+# Bivariate Analysis
+
+> **Tip**: As before, summarize what you found in your bivariate explorations
+here. Use the questions below to guide your discussion.
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. How did the feature(s) of interest vary with other features in \
+the dataset?
+
+> Quality showed to have some relationship with alcohol and density, although nothing overly strong. Seems like it will take using multiple variable together to find a strong relationship with quality. 
+
+
+### Did you observe any interesting relationships between the other features \
+(not the main feature(s) of interest)?
+
+> Found some strong relationship between density and residual.sugar, density and alcohol, and density and total.sulfur.dioxide. Density certain seems like a variable that has an effect on a good amount of variable in the dataset
+
+### What was the strongest relationship you found?
+
+> The strongest relationship I found was between density and residual.sugar.
+
+
+# Multivariate Plots Section
+
+> **Tip**: Now it's time to put everything together. Based on what you found in
+the bivariate plots section, create a few multivariate plots to investigate
+more complex interactions between variables. Make sure that the plots that you
+create here are justified by the plots you explored in the previous section. If
+you plan on creating any mathematical models, this is the section where you
+will do that.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
+ggplot(aes(density, alcohol, color = quality), data = subset(wwq, density <= 1)) +
+  geom_point() +
+  scale_color_brewer(type = 'div', palette = 5,
+    guide = guide_legend(title = 'Quality', reverse = T))
+```
+
+> Here is Density v Alcohol again with Quality as the color. You can see that as alcohol increases and density decreases, the quality of the wine appears to get better.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
+ggplot(aes(density, residual.sugar, color = quality), data = subset(wwq, density <= 1)) +
+  geom_point() +
+  scale_color_brewer(type = 'div', palette = 7,
+    guide = guide_legend(title = 'Quality', reverse = T))
+```
+
+> This time it's Density v Residual.Sugar with Quality as the color. The relationship of quality with these 2 variables isn't as strong but quality does tend to get better as density increases and residual.sugar decreases.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
+ggplot(aes(density, total.sulfur.dioxide, color = quality), data = subset(wwq, density <= 1 & total.sulfur.dioxide < 350)) +
+  geom_point() +
+  scale_color_brewer(type = 'div', palette = 2,
+    guide = guide_legend(title = 'Quality', reverse = T))
+```
+
+
+ > As I stated earlier density seems to be in the middle of most relationships in this dataset, and once again we have Density v Total.Sulfur.Dioxide this time with Quality as the color. Quality doesn't seem to change as much as total.sulfur.dioxide changes, but once again you see quality increase as density decreases.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
+ggplot(aes(residual.sugar, alcohol, color = quality), data = subset(wwq, density <= 1)) +
+  geom_point() +
+  scale_color_brewer(type = 'div', palette = 1,
+    guide = guide_legend(title = 'Quality', reverse = T))
+```
+
+> Here you see Residual.Sugar v Alcohol with Quality as the color. There is a decent relationship between these variables, as quality increases as alcohol increases and residual.sugar decreases.
+
+> I think these plots suggest that we can create a linear model using alcohol, density, and residual.sugar to predict the quality of white wine.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Linear_Model}
+m1 <- lm(quality ~ alcohol, data = wwq)
+m2 <- update(m1, ~ . + density)
+m3 <- update(m2, ~ . + residual.sugar)
+mtable(m1, m2, m3)
+```
+
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. Were there features that strengthened each other in terms of \
+looking at your feature(s) of interest?
+
+### Were there any interesting or surprising interactions between features?
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the \
+strengths and limitations of your model.
+
+------
+
+# Final Plots and Summary
+
+> **Tip**: You've done a lot of exploration and have built up an understanding
+of the structure of and relationships between the variables in your dataset.
+Here, you will select three plots from all of your previous exploration to
+present here as a summary of some of your most interesting findings. Make sure
+that you have refined your selected plots for good titling, axis labels (with
+units), and good aesthetic choices (e.g. color, transparency). After each plot,
+make sure you justify why you chose each plot by describing what it shows.
+
+### Plot One
+```{r echo=FALSE, Plot_One}
+
+```
+
+### Description One
+
+
+### Plot Two
+```{r echo=FALSE, Plot_Two}
+
+```
+
+### Description Two
+
+
+### Plot Three
+```{r echo=FALSE, Plot_Three}
+
+```
+
+### Description Three
+
+------
+
+# Reflection
+
+> **Tip**: Here's the final step! Reflect on the exploration you performed and
+the insights you found. What were some of the struggles that you went through?
+What went well? What was surprising? Make sure you include an insight into
+future work that could be done with the dataset.
+
+> **Tip**: Don't forget to remove this, and the other **Tip** sections before
+saving your final work and knitting the final report!
